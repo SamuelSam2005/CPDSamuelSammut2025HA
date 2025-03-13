@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'add_workout_page.dart'; // Import the AddWorkoutPage
+import 'add_workout_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -10,7 +10,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   List<String> workouts = [
-    "Morning Run - 5km",
+    "Morning Run",
     "Upper Body Strength",
     "Yoga Session",
     "HIIT Workout"
@@ -22,36 +22,54 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  void _removeWorkout(int index) {
+    setState(() {
+      workouts.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workouts'),
+        title: const Text('My Workouts', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.deepPurpleAccent,
+        foregroundColor: Colors.white,
       ),
       body: workouts.isEmpty
-          ? const Center(child: Text("No workouts added yet!"))
+          ? const Center(
+              child: Text(
+                "No workouts added yet!",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+              ),
+            )
           : ListView.builder(
+              padding: const EdgeInsets.all(16),
               itemCount: workouts.length,
               itemBuilder: (context, index) {
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 4,
                   child: ListTile(
-                    title: Text(workouts[index]),
-                    leading: const Icon(Icons.fitness_center),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    title: Text(
+                      workouts[index],
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    leading: const Icon(Icons.fitness_center, color: Colors.deepPurpleAccent),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        setState(() {
-                          workouts.removeAt(index);
-                        });
-                      },
+                      onPressed: () => _removeWorkout(index),
                     ),
                   ),
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -62,7 +80,9 @@ class _MainPageState extends State<MainPage> {
             _addNewWorkout(result);
           }
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text("New Workout"),
+        backgroundColor: Colors.deepPurpleAccent,
       ),
     );
   }
