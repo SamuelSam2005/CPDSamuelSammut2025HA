@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'add_workout_page.dart'; // Import the next screen
+import 'add_workout_page.dart'; // Import the AddWorkoutPage
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -9,13 +9,18 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  // Temporary static list of workouts
-  final List<String> workouts = [
+  List<String> workouts = [
     "Morning Run - 5km",
     "Upper Body Strength",
     "Yoga Session",
     "HIIT Workout"
   ];
+
+  void _addNewWorkout(Map<String, String> workout) {
+    setState(() {
+      workouts.add("${workout['title']} - ${workout['duration']} min");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +52,15 @@ class _MainPageState extends State<MainPage> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddWorkoutPage()),
           );
+
+          if (result != null) {
+            _addNewWorkout(result);
+          }
         },
         child: const Icon(Icons.add),
       ),
