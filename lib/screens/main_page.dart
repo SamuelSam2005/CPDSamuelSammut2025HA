@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'add_workout_page.dart';
+import 'package:fitness_tracker/screens/add_workout_page.dart';
+import 'package:fitness_tracker/screens/gps_tracking_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -9,80 +10,72 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  List<String> workouts = [
-    "Morning Run",
-    "Upper Body Strength",
-    "Yoga Session",
-    "HIIT Workout"
+  final List<Map<String, dynamic>> _workouts = [
+    {'title': 'Morning Run - 5km', 'location': null},
+    {'title': 'Upper Body Strength', 'location': null},
+    {'title': 'Yoga Session', 'location': null},
   ];
 
-  void _addNewWorkout(Map<String, String> workout) {
+  void _addWorkout(String title, String? location) {
     setState(() {
-      workouts.add("${workout['title']} - ${workout['duration']} min");
+      _workouts.add({'title': title, 'location': location});
     });
   }
 
-  void _removeWorkout(int index) {
+  void _deleteWorkout(int index) {
     setState(() {
-      workouts.removeAt(index);
+      _workouts.removeAt(index);
     });
+  }
+
+  void _navigateToAddWorkout() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddWorkoutPage()),
+    );
+
+    if (result != null && result is Map<String, String?>) {
+      _addWorkout(result['title']!, result['location']);
+    }
+  }
+
+  void _navigateToGPSTracking() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const GPSTrackingPage()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Workouts', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: const Text('Workouts'),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.deepPurpleAccent,
-        foregroundColor: Colors.white,
       ),
-      body: workouts.isEmpty
-          ? const Center(
-              child: Text(
-                "No workouts added yet!",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+      body: ListView.builder(
+        itemCount: _workouts.length,
+        itemBuilder: (context, index) {
+          return Card(
+            elevation: 2,
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: ListTile(
+              leading: const Icon(Icons.fitness_center),
+              title: Text(_workouts[index]['title']),
+              subtitle: _workouts[index]['location'] != null
+                  ? Text('📍 ${_workouts[index]['location']}')
+                  : null,
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _deleteWorkout(index),
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: workouts.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 4,
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                    title: Text(
-                      workouts[index],
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                    leading: const Icon(Icons.fitness_center, color: Colors.deepPurpleAccent),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _removeWorkout(index),
-                    ),
-                  ),
-                );
-              },
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddWorkoutPage()),
           );
-
-          if (result != null) {
-            _addNewWorkout(result);
-          }
         },
-        icon: const Icon(Icons.add),
-        label: const Text("New Workout"),
-        backgroundColor: Colors.deepPurpleAccent,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddWorkout,
+        child: const Icon(Icons.add),
       ),
     );
   }
