@@ -46,77 +46,127 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workouts'),
+        title: const Text(
+          'Workouts',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        itemCount: workouts.length,
-        itemBuilder: (context, index) {
-          final workout = workouts[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListTile(
-              leading: const Icon(Icons.fitness_center),
-              title: Text(workout["title"] ?? "Workout"),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("${workout["duration"]} min"),
-                  if (workout["location"] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: ListView.builder(
+          itemCount: workouts.length,
+          itemBuilder: (context, index) {
+            final workout = workouts[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title & Duration Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            workout["title"] ?? "Workout",
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          "${workout["duration"]} min",
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Location Display
+                    if (workout["location"] != null)
+                      Row(
                         children: [
-                          const Icon(Icons.location_pin, size: 16, color: Colors.red),
+                          const Icon(Icons.location_on, size: 18, color: Colors.red),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               workout["location"]!,
                               style: const TextStyle(fontSize: 14),
-                              overflow: TextOverflow.ellipsis, // Prevents overflow
-                              maxLines: 1, // Ensures it stays in one line
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
+                      )
+                    else
+                      const Text(
+                        "📍 No location added",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
-                    )
-                  else
-                    const Text("📍 No location added"),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditWorkoutPage(
-                            initialTitle: workout["title"]!,
-                            initialDuration: workout["duration"]!,
-                            initialLocation: workout["location"],
-                            onSave: (title, duration, location) {
-                              _editWorkout(index, title, duration, location);
-                            },
+
+                    // Buttons Row
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditWorkoutPage(
+                                  initialTitle: workout["title"]!,
+                                  initialDuration: workout["duration"]!,
+                                  initialLocation: workout["location"],
+                                  onSave: (title, duration, location) {
+                                    _editWorkout(index, title, duration, location);
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: const Text("Edit"),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteWorkout(index),
-                  ),
-                ],
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: () => _deleteWorkout(index),
+                          icon: const Icon(Icons.delete, size: 18),
+                          label: const Text("Delete"),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+
+      // Floating Action Button
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -129,7 +179,9 @@ class _MainPageState extends State<MainPage> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text("Add Workout"),
+        backgroundColor: Colors.deepPurple,
       ),
     );
   }

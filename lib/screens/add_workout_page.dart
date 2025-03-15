@@ -23,7 +23,7 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
     // **Check if location services are enabled**
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      if (!mounted) return;
+      if (!mounted) return; // Fix async BuildContext issue
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Location services are disabled.")),
       );
@@ -35,7 +35,7 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        if (!mounted) return;
+        if (!mounted) return; // Fix async BuildContext issue
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Location permissions are denied.")),
         );
@@ -44,21 +44,21 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      if (!mounted) return;
+      if (!mounted) return; // Fix async BuildContext issue
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Location permissions are permanently denied.")),
       );
       return;
     }
 
-    // **Get the current position**
+    // **Use updated `settings` parameter instead of `desiredAccuracy`**
     Position position = await Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
       ),
     );
 
-    if (!mounted) return;
+    if (!mounted) return; // Fix async BuildContext issue
     setState(() {
       _currentLocation = "Lat: ${position.latitude}, Lng: ${position.longitude}";
     });
@@ -70,7 +70,6 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
     final duration = _durationController.text;
     if (title.isNotEmpty && duration.isNotEmpty) {
       widget.onSave(title, duration, _currentLocation);
-      if (!mounted) return;
       Navigator.pop(context);
     }
   }
@@ -78,39 +77,100 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Workout')),
+      appBar: AppBar(
+        title: const Text('Add Workout'),
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // **Workout Title Input**
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Workout Title'),
+              decoration: InputDecoration(
+                labelText: 'Workout Title',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
             ),
+            const SizedBox(height: 15),
+
+            // **Workout Duration Input**
             TextField(
               controller: _durationController,
-              decoration: const InputDecoration(labelText: 'Duration (min)'),
+              decoration: InputDecoration(
+                labelText: 'Duration (min)',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
+
             // **GPS Location Display**
             if (_currentLocation != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.location_pin, color: Colors.red),
-                  Text(_currentLocation!, style: const TextStyle(fontSize: 16)),
-                ],
+              Card(
+                color: Colors.grey[100],
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_pin, color: Colors.red),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _currentLocation!,
+                          style: const TextStyle(fontSize: 16),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            const SizedBox(height: 10),
-            ElevatedButton(
+
+            const SizedBox(height: 15),
+
+            // **Attach Location Button**
+            ElevatedButton.icon(
               onPressed: _getCurrentLocation,
-              child: const Text("Attach Current Location"),
+              icon: const Icon(Icons.my_location),
+              label: const Text("Attach Current Location"),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveWorkout,
-              child: const Text('Save Workout'),
+
+            const Spacer(),
+
+            // **Save Workout Button**
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saveWorkout,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.deepPurple,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text('Save Workout', style: TextStyle(fontSize: 18)),
+              ),
             ),
           ],
         ),
