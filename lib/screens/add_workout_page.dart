@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 class AddWorkoutPage extends StatefulWidget {
-  const AddWorkoutPage({super.key});
+  final Function(String, String, String?) onSave;
+
+  const AddWorkoutPage({super.key, required this.onSave});
 
   @override
   State<AddWorkoutPage> createState() => _AddWorkoutPageState();
@@ -11,105 +13,104 @@ class AddWorkoutPage extends StatefulWidget {
 class _AddWorkoutPageState extends State<AddWorkoutPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
-  Position? _currentPosition;
+  String? _currentLocation; // Store the location
 
+  /// **Fetch the user's location**
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
+    // **Check if location services are enabled**
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      _showError("Location services are disabled.");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Location services are disabled.")),
+      );
       return;
     }
 
+    // **Check location permissions**
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        _showError("Location permissions are denied.");
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Location permissions are denied.")),
+        );
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      _showError("Location permissions are permanently denied.");
-      return;
-    }
-
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Location permissions are permanently denied.")),
       );
-
-      if (mounted) {
-        setState(() {
-          _currentPosition = position;
-        });
-      }
-    } catch (e) {
-      _showError("Error getting location: $e");
-    }
-  }
-
-  void _saveWorkout() {
-    String title = _titleController.text.trim();
-    String duration = _durationController.text.trim();
-    
-    if (title.isEmpty || duration.isEmpty) {
-      _showError("Please fill in all fields.");
       return;
     }
 
-    String location = _currentPosition != null
-        ? "Lat: ${_currentPosition!.latitude}, Lng: ${_currentPosition!.longitude}"
-        : "No location added";
+    // **Get the current position**
+    Position position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
+    );
 
-    // Simulating saving the workout
-    Navigator.pop(context, {
-      "title": title,
-      "duration": duration,
-      "location": location,
+    if (!mounted) return;
+    setState(() {
+      _currentLocation = "Lat: ${position.latitude}, Lng: ${position.longitude}";
     });
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  /// **Save the workout with or without location**
+  void _saveWorkout() {
+    final title = _titleController.text;
+    final duration = _durationController.text;
+    if (title.isNotEmpty && duration.isNotEmpty) {
+      widget.onSave(title, duration, _currentLocation);
+      if (!mounted) return;
+      Navigator.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Workout")),
+      appBar: AppBar(title: const Text('Add Workout')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: "Workout Title"),
+              decoration: const InputDecoration(labelText: 'Workout Title'),
             ),
             TextField(
               controller: _durationController,
-              decoration: const InputDecoration(labelText: "Duration (minutes)"),
+              decoration: const InputDecoration(labelText: 'Duration (min)'),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
+            // **GPS Location Display**
+            if (_currentLocation != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.location_pin, color: Colors.red),
+                  Text(_currentLocation!, style: const TextStyle(fontSize: 16)),
+                ],
+              ),
+            const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _getCurrentLocation,
-              child: const Text("Attach GPS Location (Optional)"),
+              child: const Text("Attach Current Location"),
             ),
-            const SizedBox(height: 10),
-            _currentPosition != null
-                ? Text("Attached Location: Lat: ${_currentPosition!.latitude}, Lng: ${_currentPosition!.longitude}")
-                : const Text("No location added"),
-            const Spacer(),
-            Center(
-              child: ElevatedButton(
-                onPressed: _saveWorkout,
-                child: const Text("Save Workout"),
-              ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _saveWorkout,
+              child: const Text('Save Workout'),
             ),
           ],
         ),
