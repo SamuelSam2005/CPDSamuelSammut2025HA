@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fitness_tracker/screens/main_page.dart'; // Import MainPage
+import 'package:fitness_tracker/screens/main_page.dart';
+import 'package:fitness_tracker/services/notification_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.initialize(); // Initialize notifications & permissions
   runApp(const FitnessTrackerApp());
 }
 
@@ -16,10 +19,10 @@ class FitnessTrackerApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',  // Ensure this starts from the splash screen
+      initialRoute: '/',
       routes: {
-        '/': (context) => const HomePage(), // Splash screen with logo & enter button
-        '/main': (context) => const MainPage(), // Main workout screen
+        '/': (context) => const HomePage(),
+        '/main': (context) => const MainPage(),
       },
     );
   }
@@ -36,7 +39,7 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/fitness_logo.png', width: 150), // App Logo
+            Image.asset('assets/images/fitness_logo.png', width: 150),
             const SizedBox(height: 20),
             const Text(
               'Fitness Tracker',
@@ -51,7 +54,7 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/main'); // Navigate to MainPage
+                Navigator.pushNamed(context, '/main');
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),

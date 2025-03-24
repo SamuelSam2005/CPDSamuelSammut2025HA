@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fitness_tracker/screens/add_workout_page.dart';
 import 'package:fitness_tracker/screens/edit_workout_page.dart';
+import 'package:fitness_tracker/services/notification_service.dart';
+
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -16,7 +18,7 @@ class _MainPageState extends State<MainPage> {
     {"title": "Yoga Session", "duration": "20", "location": null},
   ];
 
-  void _addWorkout(String title, String duration, String? location) {
+    void _addWorkout(String title, String duration, String? location) {
     setState(() {
       workouts.add({
         "title": title,
@@ -24,23 +26,42 @@ class _MainPageState extends State<MainPage> {
         "location": location,
       });
     });
+
+    NotificationService.showNotification(
+      title: "Workout Added",
+      body: "You've added $title for $duration minutes!",
+    );
   }
+
 
   void _editWorkout(int index, String title, String duration, String? location) {
-    setState(() {
-      workouts[index] = {
-        "title": title,
-        "duration": duration,
-        "location": location,
-      };
-    });
-  }
+  setState(() {
+    workouts[index] = {
+      "title": title,
+      "duration": duration,
+      "location": location,
+    };
+  });
+
+  NotificationService.showNotification(
+    title: "Workout Updated",
+    body: "$title was updated successfully.",
+  );
+}
+
 
   void _deleteWorkout(int index) {
-    setState(() {
-      workouts.removeAt(index);
-    });
-  }
+  final deletedTitle = workouts[index]['title'];
+  setState(() {
+    workouts.removeAt(index);
+  });
+
+  NotificationService.showNotification(
+    title: "Workout Deleted",
+    body: "$deletedTitle has been removed.",
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
