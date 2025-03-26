@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
+//Screen to edit an existing workout. App accepts initial values of thw workout and updtaes them when pressing 'Save'
 class EditWorkoutPage extends StatefulWidget {
   final String initialTitle;
   final String initialDuration;
@@ -32,12 +33,11 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
     _currentLocation = widget.initialLocation;
   }
 
-  /// **Fetch the user's location**
+  //Fetch updates GPS Location
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // **Check if location services are enabled**
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       if (!mounted) return;
@@ -47,7 +47,6 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
       return;
     }
 
-    // **Check location permissions**
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -68,11 +67,9 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
       return;
     }
 
-    // **Use updated `settings` parameter instead of `desiredAccuracy`**
+    // Get current position of the user
     Position position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-      ),
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
 
     if (!mounted) return;
@@ -81,13 +78,18 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
     });
   }
 
-  /// **Save the workout with or without updated location**
+  //Save edited changes  
   void _saveWorkout() {
-    final title = _titleController.text;
-    final duration = _durationController.text;
+    final title = _titleController.text.trim();
+    final duration = _durationController.text.trim();
+
     if (title.isNotEmpty && duration.isNotEmpty) {
       widget.onSave(title, duration, _currentLocation);
       Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter both title and duration.")),
+      );
     }
   }
 
@@ -103,7 +105,6 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // **Workout Title Input**
             TextField(
               controller: _titleController,
               decoration: InputDecoration(
@@ -115,20 +116,18 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
             ),
             const SizedBox(height: 15),
 
-            // **Workout Duration Input**
             TextField(
               controller: _durationController,
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Duration (min)',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
-              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
 
-            // **GPS Location Display**
             if (_currentLocation != null)
               Card(
                 color: Colors.grey[100],
@@ -156,7 +155,6 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
 
             const SizedBox(height: 15),
 
-            // **Attach Location Button**
             ElevatedButton.icon(
               onPressed: _getCurrentLocation,
               icon: const Icon(Icons.my_location),
@@ -173,7 +171,6 @@ class _EditWorkoutPageState extends State<EditWorkoutPage> {
 
             const Spacer(),
 
-            // **Save Changes Button**
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

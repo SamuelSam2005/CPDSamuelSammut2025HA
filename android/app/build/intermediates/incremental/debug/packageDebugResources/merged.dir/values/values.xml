@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">430016421150</string>
+    <string name="google_api_key" translatable="false">AIzaSyCOxKL6C0Wfv7TGUV-cB-e5jtPnD58czSE</string>
+    <string name="google_app_id" translatable="false">1:430016421150:android:0059317383f4fa3a843d0f</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCOxKL6C0Wfv7TGUV-cB-e5jtPnD58czSE</string>
+    <string name="google_storage_bucket" translatable="false">fiitness-tracker.firebasestorage.app</string>
+    <string name="project_id" translatable="false">fiitness-tracker</string>
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
+</resources>

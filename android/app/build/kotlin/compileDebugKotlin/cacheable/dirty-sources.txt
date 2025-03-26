@@ -1,0 +1,1 @@
+C:\Users\samue\SDK CPD\fitness_tracker\android\app\src\main\kotlin\com\example\fitness_tracker\MainActivity.kt

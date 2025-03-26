@@ -1,10 +1,11 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+
+// A service class to manage local notifications
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
-
   static Future<void> initialize() async {
     // Request permissions using permission_handler
     if (await Permission.notification.isDenied) {
@@ -21,6 +22,7 @@ class NotificationService {
     await _notificationsPlugin.initialize(settings);
   }
 
+  //Display a basic notification
   static Future<void> showNotification({
     required String title,
     required String body,

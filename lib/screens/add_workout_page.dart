@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
+
+// Screen to add a new workout. Allows the user to enter the name of the workout, the duration and the option to include the location
 class AddWorkoutPage extends StatefulWidget {
   final Function(String, String, String?) onSave;
 
@@ -13,29 +15,30 @@ class AddWorkoutPage extends StatefulWidget {
 class _AddWorkoutPageState extends State<AddWorkoutPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
-  String? _currentLocation; // Store the location
+  String? _currentLocation;
 
-  /// **Fetch the user's location**
+
+  //This will fetch the location of the user by using Geolocator
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // **Check if location services are enabled**
+    // Check if the location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      if (!mounted) return; // Fix async BuildContext issue
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Location services are disabled.")),
       );
       return;
     }
 
-    // **Check location permissions**
+    // If permission has not yet been grabted, the application will ask the permission of the user to use the location 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        if (!mounted) return; // Fix async BuildContext issue
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Location permissions are denied.")),
         );
@@ -44,33 +47,35 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      if (!mounted) return; // Fix async BuildContext issue
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Location permissions are permanently denied.")),
       );
       return;
     }
 
-    // **Use updated `settings` parameter instead of `desiredAccuracy`**
+    //Get the users current GPS location
     Position position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-      ),
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
 
-    if (!mounted) return; // Fix async BuildContext issue
+    if (!mounted) return;
     setState(() {
       _currentLocation = "Lat: ${position.latitude}, Lng: ${position.longitude}";
     });
   }
 
-  /// **Save the workout with or without location**
   void _saveWorkout() {
-    final title = _titleController.text;
-    final duration = _durationController.text;
+    final title = _titleController.text.trim();
+    final duration = _durationController.text.trim();
+
     if (title.isNotEmpty && duration.isNotEmpty) {
       widget.onSave(title, duration, _currentLocation);
       Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter both title and duration.")),
+      );
     }
   }
 
@@ -86,7 +91,6 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // **Workout Title Input**
             TextField(
               controller: _titleController,
               decoration: InputDecoration(
@@ -98,20 +102,18 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
             ),
             const SizedBox(height: 15),
 
-            // **Workout Duration Input**
             TextField(
               controller: _durationController,
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Duration (min)',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 filled: true,
                 fillColor: Colors.grey[100],
               ),
-              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
 
-            // **GPS Location Display**
             if (_currentLocation != null)
               Card(
                 color: Colors.grey[100],
@@ -139,7 +141,6 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
 
             const SizedBox(height: 15),
 
-            // **Attach Location Button**
             ElevatedButton.icon(
               onPressed: _getCurrentLocation,
               icon: const Icon(Icons.my_location),
@@ -156,7 +157,6 @@ class _AddWorkoutPageState extends State<AddWorkoutPage> {
 
             const Spacer(),
 
-            // **Save Workout Button**
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
